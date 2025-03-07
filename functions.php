@@ -3,8 +3,17 @@
 // Child theme styles
 
 function twentytwentyfour_child_enqueue_styles() {
+
+  wp_enqueue_style('bootstrap', 'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css');
   wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
+
+  wp_enqueue_script('ajax-filter', get_stylesheet_directory_uri() . '/js/ajax-filter.js', array('jquery'), null, true);
+  wp_localize_script('ajax-filter', 'ajax_filter', array(
+    'ajax_url' => admin_url('admin-ajax.php'),
+  ));
+
 }
+
 add_action('wp_enqueue_scripts', 'twentytwentyfour_child_enqueue_styles');
 
 function register_books_cpt() {
@@ -145,3 +154,228 @@ function register_books_acf_fields() {
   }
 }
 add_action('acf/init', 'register_books_acf_fields');
+
+// Sample books
+
+function add_sample_books() {
+  if ( ! get_page_by_title( 'Sample Book 1', OBJECT, 'book' ) ) {
+      // Sample Book 1
+      $book1 = wp_insert_post( array(
+          'post_title'   => 'Sample Book 1',
+          'post_type'    => 'book',
+          'post_status'  => 'publish',
+          'post_author'  => 1, // Adjust for the admin user ID
+      ) );
+
+      // Set ACF fields for Sample Book 1
+      update_field( 'author', 'John Doe', $book1 );
+      update_field( 'price', 19.99, $book1 );
+      update_field( 'release_date', '2023-05-10', $book1 );
+
+      // Assign taxonomies (Genre and Publisher)
+      wp_set_object_terms( $book1, array( 'Fiction' ), 'genre' );
+      wp_set_object_terms( $book1, array( 'Penguin Books' ), 'publisher' );
+  }
+
+  if ( ! get_page_by_title( 'Sample Book 2', OBJECT, 'book' ) ) {
+      // Sample Book 2
+      $book2 = wp_insert_post( array(
+          'post_title'   => 'Sample Book 2',
+          'post_type'    => 'book',
+          'post_status'  => 'publish',
+          'post_author'  => 1,
+      ) );
+
+      // Set ACF fields for Sample Book 2
+      update_field( 'author', 'Jane Smith', $book2 );
+      update_field( 'price', 15.50, $book2 );
+      update_field( 'release_date', '2022-11-05', $book2 );
+
+      // Assign taxonomies (Genre and Publisher)
+      wp_set_object_terms( $book2, array( 'Non-Fiction' ), 'genre' );
+      wp_set_object_terms( $book2, array( 'HarperCollins' ), 'publisher' );
+  }
+
+  if ( ! get_page_by_title( 'Sample Book 3', OBJECT, 'book' ) ) {
+      // Sample Book 3
+      $book3 = wp_insert_post( array(
+          'post_title'   => 'Sample Book 3',
+          'post_type'    => 'book',
+          'post_status'  => 'publish',
+          'post_author'  => 1,
+      ) );
+
+      // Set ACF fields for Sample Book 3
+      update_field( 'author', 'Emily Johnson', $book3 );
+      update_field( 'price', 22.99, $book3 );
+      update_field( 'release_date', '2024-01-15', $book3 );
+
+      // Assign taxonomies (Genre and Publisher)
+      wp_set_object_terms( $book3, array( 'Sci-Fi' ), 'genre' );
+      wp_set_object_terms( $book3, array( 'Orbit' ), 'publisher' );
+  }
+
+  if ( ! get_page_by_title( 'Sample Book 4', OBJECT, 'book' ) ) {
+      // Sample Book 4
+      $book4 = wp_insert_post( array(
+          'post_title'   => 'Sample Book 4',
+          'post_type'    => 'book',
+          'post_status'  => 'publish',
+          'post_author'  => 1,
+      ) );
+
+      // Set ACF fields for Sample Book 4
+      update_field( 'author', 'Mark Taylor', $book4 );
+      update_field( 'price', 17.99, $book4 );
+      update_field( 'release_date', '2023-08-20', $book4 );
+
+      // Assign taxonomies (Genre and Publisher)
+      wp_set_object_terms( $book4, array( 'Fantasy' ), 'genre' );
+      wp_set_object_terms( $book4, array( 'Macmillan' ), 'publisher' );
+  }
+
+  if ( ! get_page_by_title( 'Sample Book 5', OBJECT, 'book' ) ) {
+      // Sample Book 5
+      $book5 = wp_insert_post( array(
+          'post_title'   => 'Sample Book 5',
+          'post_type'    => 'book',
+          'post_status'  => 'publish',
+          'post_author'  => 1,
+      ) );
+
+      // Set ACF fields for Sample Book 5
+      update_field( 'author', 'David Brown', $book5 );
+      update_field( 'price', 25.00, $book5 );
+      update_field( 'release_date', '2021-03-30', $book5 );
+
+      // Assign taxonomies (Genre and Publisher)
+      wp_set_object_terms( $book5, array( 'Historical' ), 'genre' );
+      wp_set_object_terms( $book5, array( 'Random House' ), 'publisher' );
+  }
+}
+add_action( 'init', 'add_sample_books' );
+
+// Filters
+
+function load_books_by_filter() {
+  // Get the selected genre and publisher
+  $genre = isset($_POST['genre']) ? $_POST['genre'] : '';
+  $publisher = isset($_POST['publisher']) ? $_POST['publisher'] : '';
+
+  // Set up WP_Query for filtered books
+  $args = array(
+      'post_type'      => 'book',
+      'posts_per_page' => 10,
+      'orderby'        => 'date',
+      'order'          => 'DESC',
+  );
+
+  if ($genre) {
+      $args['tax_query'][] = array(
+          'taxonomy' => 'genre',
+          'field'    => 'id',
+          'terms'    => $genre,
+          'operator' => 'IN',
+      );
+  }
+
+  if ($publisher) {
+      $args['tax_query'][] = array(
+          'taxonomy' => 'publisher',
+          'field'    => 'id',
+          'terms'    => $publisher,
+          'operator' => 'IN',
+      );
+  }
+
+  $book_query = new WP_Query($args);
+
+  // Prepare the response
+  if ($book_query->have_posts()) : ?>
+      <ul id="book-list" class="list-unstyled">
+      <?php while ($book_query->have_posts()) : $book_query->the_post();
+          ?>
+         <li class="book-item mb-4">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h3 class="card-title"><?php the_title(); ?></h3>
+              <p class="card-text"><?php the_content(); ?></p>
+              <p><strong>Genre:</strong> <?php echo get_the_term_list(get_the_ID(), 'genre', '', ', '); ?></p>
+              <p><strong>Publisher:</strong> <?php echo get_the_term_list(get_the_ID(), 'publisher', '', ', '); ?></p>
+              <p><strong>Release Date:</strong> <?php the_date(); ?></p>
+            </div>
+          </div>
+        </li>
+          <?php
+      endwhile; ?>
+      </ul>
+  <?php else :
+      echo '<p>No books found.</p>';
+  endif;
+
+  wp_reset_postdata();
+  die();
+}
+
+add_action('wp_ajax_filter_books', 'load_books_by_filter');
+add_action('wp_ajax_nopriv_filter_books', 'load_books_by_filter');
+
+
+// Rest API
+
+function register_books_api() {
+  register_rest_route('books/v1', '/list', array(
+    'methods' => 'GET',
+    'callback' => 'get_books_list',
+  ));
+}
+add_action('rest_api_init', 'register_books_api');
+
+function get_books_list(WP_REST_Request $request) {
+  $genre = $request->get_param('genre');
+  $publisher = $request->get_param('publisher');
+  $page = $request->get_param('page') ?: 1;
+
+  // Set up WP_Query for REST API
+  $args = array(
+    'post_type'      => 'book',
+    'posts_per_page' => 10,
+    'paged'          => $page,
+    'orderby'        => 'date',
+    'order'          => 'DESC',
+  );
+
+  if ($genre) {
+    $args['tax_query'][] = array(
+      'taxonomy' => 'genre',
+      'field'    => 'id',
+      'terms'    => $genre,
+      'operator' => 'IN',
+    );
+  }
+
+  if ($publisher) {
+    $args['tax_query'][] = array(
+      'taxonomy' => 'publisher',
+      'field'    => 'id',
+      'terms'    => $publisher,
+      'operator' => 'IN',
+    );
+  }
+
+  $book_query = new WP_Query($args);
+
+  $books = [];
+  while ($book_query->have_posts()) {
+    $book_query->the_post();
+    $books[] = array(
+      'title'       => get_the_title(),
+      'content'     => get_the_content(),
+      'genre'       => get_the_term_list(get_the_ID(), 'genre', '', ', '),
+      'publisher'   => get_the_term_list(get_the_ID(), 'publisher', '', ', '),
+      'release_date' => get_the_date(),
+    );
+  }
+
+  return new WP_REST_Response($books, 200);
+}
