@@ -3,11 +3,11 @@
  * Template Name: Books Page
  * Template for displaying a list of books with filters.
  */
+
 get_header();
 ?>
 
 <?php
-// Get all terms for Genre and Publisher
 $genres = get_terms(array(
     'taxonomy' => 'genre',
     'orderby'  => 'name',
@@ -22,23 +22,26 @@ $publishers = get_terms(array(
 ?>
 <div class="container mt-5">
 
-  <h1 class="text-center mb-4">Books</h1>
-  
- <!-- Search form -->
+  <h1 class="text-center mb-2">Browse Books</h1>
 
-  <form id="book-search-form" class="mb-4">
+  <div class="mb-5">
+    <?php echo do_shortcode('[simple_book_form]'); ?>
+  </div>
+
+  <hr>
+
+  <h3 class="text-start mb-4">Filters</h3>
+  
+  <form id="book-search-filter-form" class="mb-4">
     <div class="row justify-content-center">
-      <div class="col-md-10">
+      
+      <!-- Search form -->
+      <div class="col-md-4 mb-3">
         <input type="text" id="book-search-input" class="form-control" placeholder="Search by title, author, or genre...">
       </div>
-    </div>
-  </form>
 
-  <!-- Filtering Form -->
-  <form id="book-filter-form" class="mb-4">
-    <div class="row justify-content-center">
-      <div class="col-md-5 mb-3">
-        <label for="genre-filter" class="form-label">Genre</label>
+      <!-- Genre filter -->
+      <div class="col-md-3 mb-3">
         <select name="genre" id="genre-filter" class="form-select">
           <option value="">Select Genre</option>
           <?php foreach ($genres as $genre) : ?>
@@ -47,8 +50,8 @@ $publishers = get_terms(array(
         </select>
       </div>
 
-      <div class="col-md-5 mb-3">
-        <label for="publisher-filter" class="form-label">Publisher</label>
+      <!-- Publisher filter -->
+      <div class="col-md-3 mb-3">
         <select name="publisher" id="publisher-filter" class="form-select">
           <option value="">Select Publisher</option>
           <?php foreach ($publishers as $publisher) : ?>
@@ -56,6 +59,7 @@ $publishers = get_terms(array(
           <?php endforeach; ?>
         </select>
       </div>
+
     </div>
   </form>
 
@@ -87,8 +91,8 @@ $publishers = get_terms(array(
         </li>
         <?php endwhile; ?>
         </ul>
-   <?php else :
-        echo 'No books found';
+    <?php else :
+        echo '<p>No books found</p>';
     endif;
 
     // Reset post data
