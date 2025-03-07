@@ -379,3 +379,40 @@ function get_books_list(WP_REST_Request $request) {
 
   return new WP_REST_Response($books, 200);
 }
+
+// Custom url structure 
+
+// Custom Rewrite Rules for Genre, Publisher, and Single Book
+function custom_book_rewrite_rules() {
+  // Custom Genre Archive URL
+  add_rewrite_rule(
+    '^genre/([^/]+)/?',
+    'index.php?taxonomy=genre&term=$matches[1]',
+    'top'
+  );
+
+  // Custom Publisher Archive URL
+  add_rewrite_rule(
+    '^publisher/([^/]+)/?',
+    'index.php?taxonomy=publisher&term=$matches[1]',
+    'top'
+  );
+
+  // Custom Single Book URL
+  add_rewrite_rule(
+    '^book/([^/]+)/?',
+    'index.php?post_type=book&p=$matches[1]',
+    'top'
+  );
+}
+add_action('init', 'custom_book_rewrite_rules');
+
+// Refresh Permalinks
+function custom_book_flush_rewrite_rules() {
+  flush_rewrite_rules();
+}
+
+register_activation_hook(__FILE__, 'custom_book_flush_rewrite_rules');
+register_deactivation_hook(__FILE__, 'custom_book_flush_rewrite_rules');
+
+
