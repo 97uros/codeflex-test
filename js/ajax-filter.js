@@ -1,6 +1,6 @@
-jQuery(document).ready(function($){
-	// Trigger the AJAX request when a filter changes
-	$('#book-filter-form select').on('change', function() {
+jQuery(document).ready(function($) {
+	function filterBooks() {
+			var searchQuery = $('#book-search-input').val();
 			var genre = $('#genre-filter').val();
 			var publisher = $('#publisher-filter').val();
 
@@ -10,6 +10,7 @@ jQuery(document).ready(function($){
 					method: 'POST',
 					data: {
 							action: 'filter_books',
+							search: searchQuery,
 							genre: genre,
 							publisher: publisher
 					},
@@ -20,5 +21,14 @@ jQuery(document).ready(function($){
 							$('#book-list-container').html(response); // Update book list
 					}
 			});
+	}
+
+	// Bind event listeners once
+	$('#book-search-input').on('keyup', function() {
+			filterBooks();
+	});
+
+	$('#genre-filter, #publisher-filter').on('change', function() {
+			filterBooks();
 	});
 });

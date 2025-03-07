@@ -23,6 +23,16 @@ $publishers = get_terms(array(
 <div class="container mt-5">
 
   <h1 class="text-center mb-4">Books</h1>
+  
+ <!-- Search form -->
+
+  <form id="book-search-form" class="mb-4">
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <input type="text" id="book-search-input" class="form-control" placeholder="Search by title, author, or genre...">
+      </div>
+    </div>
+  </form>
 
   <!-- Filtering Form -->
   <form id="book-filter-form" class="mb-4">
